@@ -1,59 +1,102 @@
 #!/usr/bin/python3
-"""N Queens"""
+
 import sys
 
 
-def print_board(board, n):
-    """Print allocated positions to the queen"""
-    b = []
+def solve(row, column):
+    """
+    Solve the N-Queens problem.
 
-    for i in range(n):
-        for j in range(n):
-            if j == board[i]:
-                b.append([i, j])
-    print(b)
+    Args:
+        row (int): The number of rows in the board.
+        column (int): The number of columns in the board.
+
+    Returns:
+        list: A list of solutions.
+
+    """
+    solver = [[]]
+    for q in range(row):
+        solver = place_queen(q, column, solver)
+    return solver
 
 
-def is_position_safe(board, i, j, r):
-    """Checks if the position is safe for the queen"""
-    return board[i] in (j, j - i + r, i - r + j)
+def place_queen(q, column, prev_solver):
+    """
+    Place a queen in a column in a given row.
+
+    Args:
+        q (int): The row in which to place the queen.
+        column (int): The column in which to place the queen.
+        prev_solver (list): The list of solutions found so far.
+
+    Returns:
+        list: The list of solutions with the new queen placed.
+
+    """
+    solver_queen = []
+    for array in prev_solver:
+        for x in range(column):
+            if is_safe(q, x, array):
+                solver_queen.append(array + [x])
+    return solver_queen
 
 
-def safe_positions(board, row, n):
-    """Find all safe positions where the queen can be allocated"""
-    if row == n:
-        print_board(board, n)
+def is_safe(q, x, array):
+    """
+    Check if a queen can be placed in a given position.
 
+    Args:
+        q (int): The row in which to place the queen.
+        x (int): The column in which to place the queen.
+        array (list): The list of columns in which queens are already placed.
+
+    Returns:
+        bool: True if the queen can be placed, False otherwise.
+
+    """
+    if x in array:
+        return False
     else:
-        for j in range(n):
-            allowed = True
-            for i in range(row):
-                if is_position_safe(board, i, j, row):
-                    allowed = False
-            if allowed:
-                board[row] = j
-                safe_positions(board, row + 1, n)
+        return all(abs(array[column] - x) != q - column
+                   for column in range(q))
 
 
-def create_board(size):
-    """Generates the board"""
-    return [0 * size for i in range(size)]
+def init():
+    """
+    Initialize the program.
+
+    Returns:
+        int: The number of queens to place.
+
+    """
+    if len(sys.argv) != 2:
+        print("Usage: nqueens N")
+        sys.exit(1)
+    if sys.argv[1].isdigit():
+        the_queen = int(sys.argv[1])
+    else:
+        print("N must be a number")
+        sys.exit(1)
+    if the_queen < 4:
+        print("N must be at least 4")
+        sys.exit(1)
+    return the_queen
 
 
-if len(sys.argv) != 2:
-    print("Usage: nqueens N")
-    exit(1)
+def n_queens():
+    """
+    Run the program.
 
-try:
-    n = int(sys.argv[1])
-except BaseException:
-    print("N must be a number")
-    exit(1)
+    """
+    the_queen = init()
+    solver = solve(the_queen, the_queen)
+    for array in solver:
+        clean = []
+        for q, x in enumerate(array):
+            clean.append([q, x])
+        print(clean)
 
-if (n < 4):
-    print("N must be at least 4")
-    exit(1)
 
-board = create_board(int(n))
-row = 0
-safe_positions(board, row, int(n))
+if __name__ == '__main__':
+    n_queens()
